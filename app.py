@@ -6,7 +6,7 @@ import random
 # --- OOSE PILLAR: ENCAPSULATION ---
 class MediCoreEngine:
     def __init__(self):
-        # Data persistence in session state
+        # Database persistence in session state
         if 'db' not in st.session_state:
             st.session_state.db = pd.DataFrame([
                 {"ID": "P-101", "Name": "Riya Sharma", "Condition": "Viral Flu", "Priority": "Low"},
@@ -22,59 +22,66 @@ class MediCoreEngine:
 st.set_page_config(page_title="MediCore.AI", layout="wide", page_icon="🏥")
 engine = MediCoreEngine()
 
-# --- RECTIFIED CSS (Fixed Graph Contrast) ---
+# --- RECTIFIED CSS (Fixes Ghosting & Graph Contrast) ---
 st.markdown("""
     <style>
-    /* Clean Light Background */
-    .stApp { background-color: #f9fafb; color: #111827; }
+    /* Global Background */
+    .stApp { background-color: #f8fafc; color: #1e293b; }
     
-    /* Sidebar Fix */
-    section[data-testid="stSidebar"] { background-color: #ffffff !important; border-right: 1px solid #e5e7eb; }
+    /* Sidebar Visibility Fix */
+    section[data-testid="stSidebar"] { 
+        background-color: #ffffff !important; 
+        border-right: 1px solid #e2e8f0; 
+    }
 
-    /* Bento Card Layout */
+    /* THE FIX: Forced Contrast for Hero Card */
     .hero-card {
         background: white; 
-        padding: 32px; 
-        border-radius: 16px;
-        border: 1px solid #f3f4f6;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        margin-bottom: 24px;
+        padding: 40px; 
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
     }
-    .hero-card h2 { color: #111827 !important; font-weight: 800; }
-    .hero-card p { color: #4b5563 !important; line-height: 1.6; }
+    .hero-card h2 { 
+        color: #0f172a !important; /* Forced dark navy */
+        font-weight: 800 !important; 
+        margin-bottom: 15px;
+    }
+    .hero-card p { 
+        color: #334155 !important; /* Forced slate grey */
+        line-height: 1.6 !important; 
+        font-size: 1.1rem !important;
+    }
 
-    /* Fixed Chart Container */
-    .chart-container {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        border: 1px solid #f3f4f6;
-    }
-    
-    /* Metric Styling */
+    /* Metric Value Color */
     [data-testid="stMetricValue"] { color: #2563eb !important; font-weight: 700; }
+    
+    /* Remove default padding from charts */
+    .stPlotlyChart { background-color: white; border-radius: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- SIDEBAR ---
+# --- SIDEBAR NAV ---
 with st.sidebar:
-    st.markdown("## 🏥 MediCore.AI")
+    st.markdown("<h2 style='color:#2563eb;'>🏥 MediCore.AI</h2>", unsafe_allow_html=True)
     st.caption("Healthcare OS | OOSE Mini Project")
     st.divider()
     menu = st.radio("MODULES", ["Dashboard", "AI Chatbot", "Symptom Checker", "Report Analyzer", "Patient Records"])
     st.divider()
-    st.info("Status: Services Online")
+    st.success("Status: Services Online")
 
 # --- DASHBOARD ---
 if menu == "Dashboard":
-    st.title("Dashboard")
+    st.title("System Dashboard")
     
+    # Hero Card - Now with fixed text visibility
     st.markdown("""
         <div class="hero-card">
             <h2>AI-assisted healthcare, built on classic OOP pillars.</h2>
             <p>MediCore AI combines a strongly-typed Python backend with a reactive frontend. 
-            The system demonstrates Abstraction by simplifying complex clinical diagnostics into 
-            user-friendly modules.</p>
+            The system demonstrates <b>Abstraction</b> by simplifying complex clinical diagnostics into 
+            user-friendly modules, and <b>Encapsulation</b> by protecting patient data integrity.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -86,47 +93,54 @@ if menu == "Dashboard":
 
     st.write("---")
     
-    # RECTIFIED GRAPH SECTION
-    st.subheader("Weekly Patient Load")
-    chart_data = pd.DataFrame([12, 18, 14, 32, 28, 45, 38], columns=["Inpatients"])
+    # GRAPH RECTIFICATION
+    st.subheader("Weekly Patient Load (Triaging Tends)")
+    # We use a static blue theme to ensure it doesn't wash out
+    chart_data = pd.DataFrame({
+        "Day": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        "Inflow": [15, 22, 18, 45, 30, 55, 40]
+    }).set_index("Day")
     st.area_chart(chart_data, color="#2563eb")
 
 # --- SYMPTOM CHECKER ---
 elif menu == "Symptom Checker":
-    st.title("🧪 Symptom Checker")
-    with st.form("diag_form"):
-        name = st.text_input("Patient Name")
-        symptoms = st.multiselect("Active Symptoms", ["Fever", "Cough", "Headache", "Fatigue"])
-        if st.form_submit_button("Run Analysis"):
-            diag = "Viral Flu" if "Fever" in symptoms else "General Fatigue"
-            engine.add_patient(name, symptoms, diag, "Stable")
-            st.success(f"Diagnosis: {diag}")
-            st.balloons()
+    st.title("🧪 Diagnostic Lab")
+    with st.container():
+        name = st.text_input("Patient Registry Name")
+        symptoms = st.multiselect("Identify Biomarkers", ["Fever", "Cough", "Headache", "Fatigue", "Nausea"])
+        
+        if st.button("Generate Analysis"):
+            if name and symptoms:
+                diag = "Viral Infection" if "Fever" in symptoms else "General Fatigue"
+                engine.add_patient(name, symptoms, diag, "Stable")
+                st.success(f"Logic Result: {diag} - Record Encapsulated.")
+            else:
+                st.warning("Please input both name and symptoms.")
 
 # --- AI CHATBOT ---
 elif menu == "AI Chatbot":
-    st.title("🤖 AI Chatbot")
+    st.title("🤖 AI Consultation")
     if "msgs" not in st.session_state: st.session_state.msgs = []
     for m in st.session_state.msgs:
         with st.chat_message(m["role"]): st.write(m["content"])
-    if p := st.chat_input("Ask anything..."):
+    if p := st.chat_input("Ask Dr. Aria..."):
         st.session_state.msgs.append({"role": "user", "content": p})
         with st.chat_message("user"): st.write(p)
         with st.chat_message("assistant"):
-            res = "Analyzing your query... Based on clinical data, please monitor your symptoms closely."
+            res = "Analyzing your query against medical protocols... Please monitor symptoms and update the records."
             st.write(res)
             st.session_state.msgs.append({"role": "assistant", "content": res})
 
 # --- REPORT ANALYZER ---
 elif menu == "Report Analyzer":
-    st.title("📄 Report Analyzer")
-    file = st.file_uploader("Upload Lab Report", type=['png', 'jpg', 'pdf'])
+    st.title("📄 Report Analysis Core")
+    file = st.file_uploader("Upload Medical Scan", type=['png', 'jpg', 'pdf'])
     if file:
-        with st.status("Extracting Data..."):
+        with st.status("Parsing Document..."):
             time.sleep(2)
-        st.success("Analysis Complete: WBC Count slightly elevated. Recommend hydration.")
+        st.info("Analysis: All biomarkers within normal range. Low inflammatory markers detected.")
 
 # --- PATIENT RECORDS ---
 elif menu == "Patient Records":
-    st.title("👨‍⚕️ Patient Records")
+    st.title("👨‍⚕️ Encrypted Archive")
     st.dataframe(st.session_state.db, use_container_width=True, hide_index=True)
