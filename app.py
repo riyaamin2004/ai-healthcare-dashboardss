@@ -129,4 +129,4 @@ elif menu == "Report Analyzer":
 # --- PATIENT RECORDS ---
 elif menu == "Patient Records":
     st.title("👨‍⚕️ Patient Records")
-    st.dataframe(st.session_state.db, use_container_width=True, hide
+    st.dataframe(st.session_state.db, use_container_width=True, hide_index=True)
